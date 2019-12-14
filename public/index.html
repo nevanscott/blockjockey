@@ -19,7 +19,7 @@
       this.$container = document.getElementById('container');
       this.$player = document.getElementById('player');
       this.$interstitial = document.getElementById('interstitial');
-      this.request = new Request('/.netlify/functions/airtable');
+      this.request = new Request('/.netlify/functions/getPlaylist');
     }
 
     Playlist.prototype.updateQueue = function(state) {
