@@ -1,1 +1,33 @@
-For now, just using this area to test some serverless stuff.
+<title>Blockjockey Player</title>
+<meta charset="utf-8">
+
+<body>
+  <script>
+    function write(text) {
+      document.body.innerHTML += text + ' ';
+    }
+
+    if(fetch) {
+      let myRequest = new Request('/.netlify/functions/airtable');
+
+      fetch(myRequest)
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('HTTP error, status = ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          console.log(data);
+          data.records.map(function(song) {
+            write(`
+              <li>
+                ${song.name}
+                (<a href="${song.youtube}">Youtube</a>)
+              </li>
+            `);
+          });
+        });
+    }
+  </script>
+</body>
