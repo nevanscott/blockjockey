@@ -2,32 +2,75 @@
 <meta charset="utf-8">
 
 <body>
+  <div id="player"></div>
+  <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
   <script>
+    var player;
+
+    // The API will call this function when the video player is ready.
+    function onPlayerReady(event) {
+      event.target.playVideo();
+    }
+
+    // The API calls this function when the player's state changes.
+    // The function indicates that when playing a video (state=1),
+    // the player should play for six seconds and then stop.
+    var done = false;
+    function onPlayerStateChange(event) {
+      console.log(event);
+      if (event.data == YT.PlayerState.PLAYING && !done) {
+        setTimeout(stopVideo, 6000);
+        done = true;
+      }
+    }
+    function stopVideo() {
+      player.stopVideo();
+    }
+
     function write(text) {
       document.body.innerHTML += text + ' ';
     }
 
-    if(fetch) {
-      let myRequest = new Request('/.netlify/functions/airtable');
-
-      fetch(myRequest)
-        .then(function(response) {
-          if (!response.ok) {
-            throw new Error('HTTP error, status = ' + response.status);
-          }
-          return response.json();
-        })
-        .then(function(data) {
-          console.log(data);
-          data.records.map(function(song) {
-            write(`
-              <li>
-                ${song.name}
-                (<a href="${song.youtube}">Youtube</a>)
-              </li>
-            `);
-          });
-        });
+    function getYoutubeIdFromUrl(url) {
+      return url.split('?')[1].split('v=')[1].split('&')[0];
     }
+
+    function loadPlaylist() {
+      if(fetch) {
+        let myRequest = new Request('/.netlify/functions/airtable');
+
+        fetch(myRequest)
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('HTTP error, status = ' + response.status);
+            }
+            return response.json();
+          })
+          .then(function(data) {
+            console.log(data);
+            const nextSong = data.records[0];
+            const songID = getYoutubeIdFromUrl(nextSong.youtube);
+            player = new YT.Player('player', {
+              height: '390',
+              width: '640',
+              videoId: songID,
+              events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+              }
+            });
+            data.records.map(function(song, i) {
+              write(`
+                <li>
+                  ${song.name}
+                  (<a href="${song.youtube}">Youtube</a>)
+                </li>
+              `);
+            });
+          });
+      }
+    }
+
+    loadPlaylist();
   </script>
 </body>
