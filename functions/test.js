@@ -1,6 +1,8 @@
+const { NAME } = process.env
+
 exports.handler = (event, context, callback) => {
   callback(null, {
     statusCode: 200,
-    body: 'No worries, all is working fine!'
+    body: `No worries, ${ NAME }, all is working fine!`
   })
 }
